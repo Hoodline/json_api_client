@@ -8,30 +8,30 @@ module JsonApiClient
       end
 
       # expects a record
-      def create(record)
+      def create(record, options = {})
         request(:post, klass.path(record.attributes), {
           data: record.as_json_api
-        })
+        }, options)
       end
 
-      def update(record)
+      def update(record, options = {})
         request(:patch, resource_path(record.attributes), {
           data: record.as_json_api
-        })
+        }, options)
       end
 
-      def get(params = {})
+      def get(params = {}, options = {})
         path = resource_path(params)
         params.delete(klass.primary_key)
-        request(:get, path, params)
+        request(:get, path, params, options)
       end
 
-      def destroy(record)
-        request(:delete, resource_path(record.attributes), {})
+      def destroy(record, options = {})
+        request(:delete, resource_path(record.attributes), {}, options)
       end
 
-      def linked(path)
-        request(:get, path, {})
+      def linked(path, options = {})
+        request(:get, path, {}, options)
       end
 
       def custom(method_name, options, params)
@@ -39,7 +39,10 @@ module JsonApiClient
         params.delete(klass.primary_key)
         path = File.join(path, method_name.to_s)
 
-        request(options.fetch(:request_method, :get), path, params)
+        request_options = options ? options.dup : {}
+        request_method = request_options.delete(:request_method) || :get
+
+        request(request_method, path, params, request_options)
       end
 
       protected
@@ -59,8 +62,8 @@ module JsonApiClient
         Addressable::URI.encode_component(part, Addressable::URI::CharacterClasses::UNRESERVED)
       end
 
-      def request(type, path, params)
-        klass.parser.parse(klass, connection.run(type, path, params, klass.custom_headers))
+      def request(type, path, params, options = {})
+        klass.parser.parse(klass, connection.run(type, path, params, klass.custom_headers, options))
       end
 
     end

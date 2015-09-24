@@ -95,4 +95,12 @@ class QueryBuilderTest < MiniTest::Test
     articles = Article.select("title,body").to_a
   end
 
+  def test_can_provide_options
+    stub_request(:get, "http://example.com/articles")
+      .to_return(headers: {content_type: "application/vnd.api+json"}, body: {
+        data: []
+      }.to_json)
+    articles = Article.options('foo' => 'bar').to_a
+  end
+
 end
