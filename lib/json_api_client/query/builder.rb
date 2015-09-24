@@ -13,6 +13,7 @@ module JsonApiClient
         @includes = []
         @orders = []
         @fields = []
+        @options = {}
       end
 
       def where(conditions = {})
@@ -54,6 +55,11 @@ module JsonApiClient
         self
       end
 
+      def options(opts)
+        @options = opts
+        self
+      end
+
       def first
         paginate(page: 1, per_page: 1).to_a.first
       end
@@ -85,7 +91,7 @@ module JsonApiClient
           @primary_key = args
         end
 
-        klass.requestor.get(params)
+        klass.requestor.get(params, @options)
       end
 
       def method_missing(method_name, *args, &block)
